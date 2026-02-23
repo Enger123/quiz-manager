@@ -61,19 +61,36 @@ class Answers:
             print("Кількість питань повинна бути числом")
 
     def del_question(self):
-        for i, question in enumerate(self.answers.keys(), start=1):
-            print(f"{i}. {question}")
-        n = int(input(f"Введіть номер питання для видалення: "))
-        key_to_remove = list(self.answers.keys())[n - 1]
-        del self.answers[key_to_remove]
-        print("Питання видалено")
+        try:
+            for i, question in enumerate(self.answers.keys(), start=1):
+                print(f"{i}. {question}")
+            n = int(input(f"Введіть номер питання для видалення: "))
+            key_to_remove = list(self.answers.keys())[n - 1]
+            del self.answers[key_to_remove]
+            print("Питання видалено")
+        except IndexError:
+            print("Ви виходите за межі")
+
+    def edit_question(self):
+        try:
+            for i, question in enumerate(self.answers.keys(), start=1):
+                print(f"{i}. {question}")
+            n = int(input(f"Введіть номер питання для редагування: "))
+            key_to_remove = list(self.answers.keys())[n - 1]
+            new_question = input(f"Введіть нове питання {n}: ")
+            new_answer = input(f"Введіть відповідь до цього питання(через кому \", \"): ").lower().split(", ")
+            self.answers[new_question] = [ans.strip() for ans in new_answer]
+            del self.answers[key_to_remove]
+            print("Питання відреаговано")
+        except IndexError:
+            print("Ви виходите за межі")
 
 def main():
     manager = Answers()
     print("Ви у менеджері питань")
     while True:
-        button = input("Натисніть 1 - щоб пройти тестування, 2 - додати питання, 3 - видалити питання, 0 - закрити: ")
-        if button not in ('0', '1', '2', '3'):
+        button = input("Натисніть 1 - щоб пройти тестування, 2 - додати питання, 3 - видалити питання, 4 - редагувати питання, 0 - закрити: ")
+        if button not in ('0', '1', '2', '3', '4'):
             print("Помилка: Таке значення в програмі не доступне")
         elif button == '1':
             manager.questions()
@@ -83,8 +100,12 @@ def main():
         elif button == '3':
             manager.del_question()
             manager.save()
+        elif button == '4':
+            manager.edit_question()
+            manager.save()
         else:
             break
+
 
 if __name__ == '__main__':
     main()
