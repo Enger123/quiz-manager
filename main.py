@@ -1,6 +1,8 @@
 import random
 import os
 import json
+from json import JSONDecodeError
+
 
 class Answers:
     def __init__(self):
@@ -43,8 +45,25 @@ class Answers:
         self.results(true_counter, false_counter, all_questions)
 
     def results(self, t, f, all):
-        percent = t * 100 / all
-        print(f"Ваш результат: {percent}% правильних")
+        grade = t * 100 / all
+        rounded_grade = round(grade)
+        res = {'best score': rounded_grade}
+        if os.path.isfile("stats.json"):
+            try:
+                with open("stats.json", "r") as file:
+                    data = json.load(file)
+                best = data["best score"]
+                if rounded_grade > best:
+                    with open("stats.json", "w") as file:
+                        json.dump(res, file, indent=4)
+            except (json.JSONDecodeError, ValueError):
+                with open("stats.json", "w") as file:
+                    json.dump(res, file, indent=4)
+        else:
+            with open("stats.json", "w") as file:
+                json.dump(res, file, indent=4)
+
+        print(f"Ваш результат: {rounded_grade}.")
 
     def add_questions(self):
         try:
