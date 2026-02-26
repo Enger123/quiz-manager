@@ -51,16 +51,21 @@ class Answers:
             try:
                 with open("stats.json", "r") as file:
                     data = json.load(file)
-                best = data["best score"]
-                if rounded_grade > best:
-                    with open("stats.json", "w") as file:
-                        json.dump({'best score': rounded_grade}, file, indent=4)
             except (json.JSONDecodeError, ValueError):
-                with open("stats.json", "w") as file:
-                    json.dump({'best score': rounded_grade}, file, indent=4)
+               data = {}
         else:
-            with open("stats.json", "w") as file:
-                json.dump({'best score': rounded_grade}, file, indent=4)
+            data = {}
+
+        best_score = data.get("best score", 0)
+        if rounded_grade > best_score:
+            best_score = rounded_grade
+        data["best score"] = best_score
+        if "history" not in data:
+            data["history"] = []
+        data["history"].append(rounded_grade)
+        with open("stats.json", "w") as file:
+            json.dump(data, file, indent=4)
+
 
         print(f"Ваш результат: {rounded_grade}.")
 
