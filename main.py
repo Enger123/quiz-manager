@@ -47,7 +47,6 @@ class Answers:
     def results(self, t, f, all):
         grade = t * 100 / all
         rounded_grade = round(grade)
-        res = {'best score': rounded_grade}
         if os.path.isfile("stats.json"):
             try:
                 with open("stats.json", "r") as file:
@@ -55,13 +54,13 @@ class Answers:
                 best = data["best score"]
                 if rounded_grade > best:
                     with open("stats.json", "w") as file:
-                        json.dump(res, file, indent=4)
+                        json.dump({'best score': rounded_grade}, file, indent=4)
             except (json.JSONDecodeError, ValueError):
                 with open("stats.json", "w") as file:
-                    json.dump(res, file, indent=4)
+                    json.dump({'best score': rounded_grade}, file, indent=4)
         else:
             with open("stats.json", "w") as file:
-                json.dump(res, file, indent=4)
+                json.dump({'best score': rounded_grade}, file, indent=4)
 
         print(f"Ваш результат: {rounded_grade}.")
 
