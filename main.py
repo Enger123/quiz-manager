@@ -42,6 +42,7 @@ class Answers:
                 true_counter += 1
             else:
                 false_counter += 1
+                print(f"Неправильно! Правильна відповідь: {', '.join(correct_answers).title()}")
         self.results(true_counter, false_counter, all_questions)
 
     def results(self, t, f, all):
@@ -74,7 +75,7 @@ class Answers:
             num = int(input("Скільки питань додати? (максимум 3): "))
             if 0 < num < 4:
                 for i in range(1, num + 1):
-                    question = input(f"Питання №{i}: ").strip().lower()
+                    question = input(f"Питання №{i}: ").strip()
                     correct_answer = input(f"Відповідь до питання через кому №{i}: ").lower().split(", ")
                     self.answers[question] = [ans.strip() for ans in correct_answer]
                     print("Питання додано")
