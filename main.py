@@ -34,10 +34,23 @@ class Answers:
     def questions(self):
         true_counter = 0
         false_counter = 0
-        all_questions = len(self.answers)
         items = list(self.answers.items())
         random.shuffle(items)
-        for question, correct_answers in items:
+        mode = input("Виберіть режим питань (1) - 3 випадкових, (2) - 5 випадкових, (3) - усі питання: ")
+        if mode not in ('1', '2', '3'):
+            raise ValueError("Помилка: Таке значення не допустиме.")
+        elif mode == '1':
+            count = 3
+        elif mode == '2':
+            count = 5
+        elif mode == '3':
+            count = len(items)
+        if count > len(items):
+            print("Помилка: Недостатньо питань в базі")
+        sample_questions = random.sample(items, count)
+        all_questions = count
+
+        for question, correct_answers in sample_questions:
             if input(question).strip().lower() in correct_answers:
                 true_counter += 1
             else:
@@ -92,8 +105,8 @@ class Answers:
             key_to_remove = list(self.answers.keys())[n - 1]
             del self.answers[key_to_remove]
             print("Питання видалено")
-        except IndexError:
-            print("Ви виходите за межі")
+        except (IndexError, ValueError):
+            print("Ви виходите за межі або ввели не число")
 
     def edit_question(self):
         try:
@@ -106,8 +119,8 @@ class Answers:
             self.answers[new_question] = [ans.strip() for ans in new_answer]
             del self.answers[key_to_remove]
             print("Питання відреаговано")
-        except IndexError:
-            print("Ви виходите за межі")
+        except (IndexError, ValueError):
+            print("Ви виходите за межі або ввели не число")
 
 def main():
     manager = Answers()
