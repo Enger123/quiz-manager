@@ -1,11 +1,50 @@
 import random
 import os
 import json
-from json import JSONDecodeError
-from types import new_class
 
+class StatsManager:
+    FILE = "stats.json"
+    def __init__(self):
+        self.data = self.load()
 
-class Answers:
+    def load(self):
+        if os.path.isfile(self.FILE):
+            try:
+                with open("stats.json", "r") as file:
+                    return json.load(file)
+            except (json.JSONDecodeError, ValueError):
+               return {'best score': 0, 'history': []}
+        else:
+            return {'best score': 0, 'history': []}
+
+    def save(self):
+        with open("stats.json", "w") as file:
+            json.dump(self.data, file, indent=4)
+
+    def update(self, score):
+        best_score = self.data.get('best score', 0)
+        if score > best_score:
+            best_score = score
+        self.data['best score'] = best_score
+        if "history" not in self.data:
+            self.data["history"] = []
+        self.data["history"].append(score)
+        self.save()
+
+    def show(self):
+        history = self.data.get("history", [])
+
+        if not history:
+            print("Статистика відсутня")
+            return
+
+        avg = sum(history) / len(history)
+        print(f"Найкращий результат: {self.data['best score']}")
+        print(f"Середній бал: {round(avg, 2)}")
+        print(f"Кількість проходжень: {len(history)}")
+        print(f"Останні 5: {history[-5:]}")
+
+class QuestionManager:
     def __init__(self):
         self.answers = self.load_file()
 
@@ -62,32 +101,11 @@ class Answers:
             else:
                 false_counter += 1
                 print(f"Неправильно! Правильна відповідь: {', '.join(correct_answers).title()}")
-        self.results(true_counter, false_counter, all_questions)
-
-    def results(self, t, f, all):
-        grade = t * 100 / all
+        grade = true_counter * 100 / all_questions
         rounded_grade = round(grade)
-        if os.path.isfile("stats.json"):
-            try:
-                with open("stats.json", "r") as file:
-                    data = json.load(file)
-            except (json.JSONDecodeError, ValueError):
-               data = {}
-        else:
-            data = {}
-
-        best_score = data.get("best score", 0)
-        if rounded_grade > best_score:
-            best_score = rounded_grade
-        data["best score"] = best_score
-        if "history" not in data:
-            data["history"] = []
-        data["history"].append(rounded_grade)
-        with open("stats.json", "w") as file:
-            json.dump(data, file, indent=4)
+        return rounded_grade
 
 
-        print(f"Ваш результат: {rounded_grade}.")
 
     def add_questions(self):
         try:
@@ -127,48 +145,32 @@ class Answers:
             print("Питання відреаговано")
         except (IndexError, ValueError):
             print("Ви виходите за межі або ввели не число")
-    def show_stats(self):
-        if not os.path.isfile('stats.json'):
-            print("Статистика відсутня")
-            return
-        else:
-            with open('stats.json', 'r') as file:
-                data = json.load(file)
-            total = 0
-            for el in data['history']:
-                total += el
-            best_score = data["best score"]
-            avg = total/len(data['history'])
-            tries = len(data['history'])
-            last_five = data['history'][-1:-6:-1]
-            renew_last_five = ', '.join(map(str, last_five))
-            print(f"Найкращий результат {best_score}")
-            print(f"Середній бал: {avg}")
-            print(f"Кількість проходжень: {tries}")
-            print(f"Останні 5 результатів: {renew_last_five}")
+
 def main():
-    manager = Answers()
+    question = QuestionManager()
+    stats = StatsManager()
     print("Ви у менеджері питань")
     while True:
         button = input("Натисніть 1 - щоб пройти тестування, 2 - додати питання, 3 - видалити питання, 4 - редагувати питання, 5 - показати статистику, 0 - закрити: ")
         if button not in ('0', '1', '2', '3', '4', '5'):
             print("Помилка: Таке значення в програмі не доступне")
         elif button == '1':
-            manager.questions()
+            score = question.questions()
+            if score is not None:
+                stats.update(score)
         elif button == '2':
-            manager.add_questions()
-            manager.save()
+            question.add_questions()
+            question.save()
         elif button == '3':
-            manager.del_question()
-            manager.save()
+            question.del_question()
+            question.save()
         elif button == '4':
-            manager.edit_question()
-            manager.save()
+            question.edit_question()
+            question.save()
         elif button == '5':
-            manager.show_stats()
+            stats.show()
         else:
             break
-
 
 if __name__ == '__main__':
     main()
