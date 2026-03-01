@@ -2,6 +2,7 @@ import random
 import os
 import json
 from json import JSONDecodeError
+from types import new_class
 
 
 class Answers:
@@ -36,17 +37,22 @@ class Answers:
         false_counter = 0
         items = list(self.answers.items())
         random.shuffle(items)
-        mode = input("Виберіть режим питань (1) - 3 випадкових, (2) - 5 випадкових, (3) - усі питання: ")
-        if mode not in ('1', '2', '3'):
-            raise ValueError("Помилка: Таке значення не допустиме.")
-        elif mode == '1':
-            count = 3
-        elif mode == '2':
-            count = 5
-        elif mode == '3':
-            count = len(items)
+        while True:
+            mode = input("Виберіть режим питань (1) - 3 випадкових, (2) - 5 випадкових, (3) - усі питання: ")
+            if mode not in ('1', '2', '3'):
+                print("Помилка: Таке значення не допустиме.")
+            elif mode == '1':
+                count = 3
+                break
+            elif mode == '2':
+                count = 5
+                break
+            elif mode == '3':
+                count = len(items)
+                break
         if count > len(items):
             print("Помилка: Недостатньо питань в базі")
+            return
         sample_questions = random.sample(items, count)
         all_questions = count
 
@@ -121,13 +127,31 @@ class Answers:
             print("Питання відреаговано")
         except (IndexError, ValueError):
             print("Ви виходите за межі або ввели не число")
-
+    def show_stats(self):
+        if not os.path.isfile('stats.json'):
+            print("Статистика відсутня")
+            return
+        else:
+            with open('stats.json', 'r') as file:
+                data = json.load(file)
+            total = 0
+            for el in data['history']:
+                total += el
+            best_score = data["best score"]
+            avg = total/len(data['history'])
+            tries = len(data['history'])
+            last_five = data['history'][-1:-6:-1]
+            renew_last_five = ', '.join(map(str, last_five))
+            print(f"Найкращий результат {best_score}")
+            print(f"Середній бал: {avg}")
+            print(f"Кількість проходжень: {tries}")
+            print(f"Останні 5 результатів: {renew_last_five}")
 def main():
     manager = Answers()
     print("Ви у менеджері питань")
     while True:
-        button = input("Натисніть 1 - щоб пройти тестування, 2 - додати питання, 3 - видалити питання, 4 - редагувати питання, 0 - закрити: ")
-        if button not in ('0', '1', '2', '3', '4'):
+        button = input("Натисніть 1 - щоб пройти тестування, 2 - додати питання, 3 - видалити питання, 4 - редагувати питання, 5 - показати статистику, 0 - закрити: ")
+        if button not in ('0', '1', '2', '3', '4', '5'):
             print("Помилка: Таке значення в програмі не доступне")
         elif button == '1':
             manager.questions()
@@ -140,6 +164,8 @@ def main():
         elif button == '4':
             manager.edit_question()
             manager.save()
+        elif button == '5':
+            manager.show_stats()
         else:
             break
 
