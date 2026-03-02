@@ -1,6 +1,7 @@
 import random
 import os
 import json
+import time
 
 class StatsManager:
     FILE = "stats.json"
@@ -96,11 +97,21 @@ class QuestionManager:
         all_questions = count
 
         for question, correct_answers in sample_questions:
-            if input(question).strip().lower() in correct_answers:
+            print("У вас 10 секунд")
+            start = time.time()
+            user_ans = input(question).strip().lower()
+            elapsed = time.time() - start
+            if elapsed > 10:
+                print(f"Ви не встигли відповісти по часу! Правильна відповідь: {', '.join(correct_answers).title()}")
+                false_counter += 1
+                continue
+            if user_ans in correct_answers:
                 true_counter += 1
             else:
                 false_counter += 1
                 print(f"Неправильно! Правильна відповідь: {', '.join(correct_answers).title()}")
+
+
         grade = true_counter * 100 / all_questions
         rounded_grade = round(grade)
         return rounded_grade
@@ -156,7 +167,7 @@ def main():
             print("Помилка: Таке значення в програмі не доступне")
         elif button == '1':
             score = question.questions()
-            if score is not None:
+            if score is not None: #захист від недостатньої кількості питань після return повертає None
                 stats.update(score)
         elif button == '2':
             question.add_questions()
