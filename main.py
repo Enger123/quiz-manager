@@ -63,9 +63,9 @@ class QuestionManager:
 
     def default_data(self):
         return {
-            "Яка столиця України? ": ["київ"],
-            "Хто написав Заповіт? ": ["тарас шевченко", "шевченко", "тарас григорович шевченко"],
-            "Хто президент України? ": ["володимир зеленський", "зеленський"]
+            "history": {"Коли Україна стала незалежною, ввести рік? ": ["1991"]},
+            "geography": {"Столиця Франції?": ["Париж"]},
+            "biology": {"Скільки хромосом в нормальної людини": ["46"]}
         }
 
     def save(self):
@@ -75,7 +75,15 @@ class QuestionManager:
     def questions(self):
         true_counter = 0
         false_counter = 0
-        items = list(self.answers.items())
+        print("Ось доступні категорії: ")
+        for i, category in enumerate(self.answers, start=1):
+            print(f"{i}. {category}")
+        user_category = input("Введіть вашу категорію: ").lower()
+        if user_category in self.answers:
+            items = list(self.answers[user_category].items())
+        else:
+            print("Категорія відсутня.")
+            return
         random.shuffle(items)
         while True:
             mode = input("Виберіть режим питань (1) - 3 випадкових, (2) - 5 випадкових, (3) - усі питання: ")
@@ -91,7 +99,7 @@ class QuestionManager:
                 count = len(items)
                 break
         if count > len(items):
-            print("Помилка: Недостатньо питань в базі")
+            print(f"Помилка: Недостатньо питань в базі у {user_category}")
             return
         sample_questions = random.sample(items, count)
         all_questions = count
@@ -99,12 +107,14 @@ class QuestionManager:
         for question, correct_answers in sample_questions:
             print("У вас 10 секунд")
             start = time.time()
-            user_ans = input(question).strip().lower()
+            print(f"\nПитання: {question}")
+            user_ans = input("Ваша відповідь: ").strip().lower()
             elapsed = time.time() - start
             if elapsed > 10:
                 print(f"Ви не встигли відповісти по часу! Правильна відповідь: {', '.join(correct_answers).title()}")
                 false_counter += 1
                 continue
+            correct_answers = [ans.lower().strip() for ans in correct_answers]
             if user_ans in correct_answers:
                 true_counter += 1
             else:
@@ -123,9 +133,10 @@ class QuestionManager:
             num = int(input("Скільки питань додати? (максимум 3): "))
             if 0 < num < 4:
                 for i in range(1, num + 1):
+                    category = input(f"Введіть категорію до питання №{i} на англ: ").lower().strip()
                     question = input(f"Питання №{i}: ").strip()
                     correct_answer = input(f"Відповідь до питання через кому №{i}: ").lower().split(", ")
-                    self.answers[question] = [ans.strip() for ans in correct_answer]
+                    self.answers[category][question] = [ans.strip() for ans in correct_answer]
                     print("Питання додано")
             else:
                 print("Недоступно ввести")
