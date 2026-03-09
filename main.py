@@ -11,7 +11,7 @@ class StatsManager:
     def load(self):
         if os.path.isfile(self.FILE):
             try:
-                with open("stats.json", "r") as file:
+                with open(self.FILE, "r") as file:
                     return json.load(file)
             except (json.JSONDecodeError, ValueError):
                return {'best score': 0, 'history': []}
@@ -19,17 +19,17 @@ class StatsManager:
             return {'best score': 0, 'history': []}
 
     def save(self):
-        with open("stats.json", "w") as file:
+        with open(self.FILE, "w") as file:
             json.dump(self.data, file, indent=4)
 
-    def update(self, score):
+    def update(self, score, category):
         best_score = self.data.get('best score', 0)
         if score > best_score:
             best_score = score
         self.data['best score'] = best_score
         if "history" not in self.data:
             self.data["history"] = []
-        self.data["history"].append(score)
+        self.data["history"].append({"score": score, "category": category})
         self.save()
 
     def show(self):
@@ -39,7 +39,7 @@ class StatsManager:
             print("Статистика відсутня")
             return
 
-        avg = sum(history) / len(history)
+        avg = sum(item['score'] for item in history) / len(history)
         print(f"Найкращий результат: {self.data['best score']}")
         print(f"Середній бал: {round(avg, 2)}")
         print(f"Кількість проходжень: {len(history)}")
@@ -124,7 +124,9 @@ class QuestionManager:
 
         grade = true_counter * 100 / all_questions
         rounded_grade = round(grade)
-        return rounded_grade
+        print(f"Кількість правильних: {true_counter}")
+        print(f"Кількість неправильних: {false_counter}")
+        return rounded_grade, user_category
 
 
 
@@ -134,6 +136,8 @@ class QuestionManager:
             if 0 < num < 4:
                 for i in range(1, num + 1):
                     category = input(f"Введіть категорію до питання №{i} на англ: ").lower().strip()
+                    if category not in self.answers:
+                        self.answers[category] = {}
                     question = input(f"Питання №{i}: ").strip()
                     correct_answer = input(f"Відповідь до питання через кому №{i}: ").lower().split(", ")
                     self.answers[category][question] = [ans.strip() for ans in correct_answer]
@@ -145,26 +149,64 @@ class QuestionManager:
 
     def del_question(self):
         try:
-            for i, question in enumerate(self.answers.keys(), start=1):
-                print(f"{i}. {question}")
-            n = int(input(f"Введіть номер питання для видалення: "))
-            key_to_remove = list(self.answers.keys())[n - 1]
-            del self.answers[key_to_remove]
-            print("Питання видалено")
+            question_category = input("Введіть 1 - видалити категорію, 2 - питання з категорії: ")
+            if question_category not in ('1', '2'):
+                print("Недоступно")
+                return
+            elif question_category == '1':
+                for i, category in enumerate(self.answers.keys(), start=1):
+                    print(f"{i}. {category}")
+                n = int(input(f"Введіть номер категорії для видалення: "))
+                key_to_remove = list(self.answers.keys())[n - 1]
+                del self.answers[key_to_remove]
+                print("Категорію видалено")
+            else:
+                for i, category in enumerate(self.answers.keys(), start=1):
+                    print(f"{i}. {category}")
+                n = int(input(f"Введіть номер категорії, в якій хочете видалити питання: "))
+                key_to_category = list(self.answers.keys())[n - 1]
+                questions = self.answers[key_to_category]
+                for i, question in enumerate(questions, start=1):
+                    print(f"{i}. {question}")
+                num_to_del = int(input("Введіть номер питання для видалення: "))
+                key_to_remove = list(questions.keys())[num_to_del - 1]
+                del questions[key_to_remove]
+                print("Питання видалено")
+
         except (IndexError, ValueError):
             print("Ви виходите за межі або ввели не число")
 
     def edit_question(self):
         try:
-            for i, question in enumerate(self.answers.keys(), start=1):
-                print(f"{i}. {question}")
-            n = int(input(f"Введіть номер питання для редагування: "))
-            key_to_remove = list(self.answers.keys())[n - 1]
-            new_question = input(f"Введіть нове питання {n}: ")
-            new_answer = input(f"Введіть відповідь до цього питання(через кому \", \"): ").lower().split(", ")
-            self.answers[new_question] = [ans.strip() for ans in new_answer]
-            del self.answers[key_to_remove]
-            print("Питання відреаговано")
+            choice = input("Введіть 1 - щоб змінити назву категорії, 2 - щоб змінити питання: ")
+            if choice not in ('1', '2'):
+                print("Недоступно")
+                return
+            elif choice == '1':
+                for i, category in enumerate(self.answers.keys(), start=1):
+                    print(f"{i}. {category}")
+                n = int(input(f"Введіть номер категорії для редагування: "))
+                key_to_remove = list(self.answers.keys())[n - 1]
+                value = self.answers[key_to_remove]
+                new_category = input(f"Введіть нову категорію {n}: ")
+                self.answers[new_category] = value
+                del self.answers[key_to_remove]
+                print("Категорію відреаговано")
+            else:
+                for i, category in enumerate(self.answers.keys(), start=1):
+                    print(f"{i}. {category}")
+                n = int(input(f"Введіть номер категорії для редагування: "))
+                key_to_category = list(self.answers.keys())[n - 1]
+                questions = self.answers[key_to_category]
+                for i, question in enumerate(questions, start=1):
+                    print(f"{i}. {question}")
+                question_to_edit = int(input("Введіть номер питання для редагування: "))
+                key_to_remove = list(questions.keys())[question_to_edit - 1]
+                new_question = input(f"Введіть нове питання {n}: ")
+                new_answer = input(f"Введіть відповідь до цього питання(через кому \", \"): ").lower().split(", ")
+                questions[new_question] = [ans.strip() for ans in new_answer]
+                del questions[key_to_remove]
+                print("Питання змінено")
         except (IndexError, ValueError):
             print("Ви виходите за межі або ввели не число")
 
@@ -177,9 +219,10 @@ def main():
         if button not in ('0', '1', '2', '3', '4', '5'):
             print("Помилка: Таке значення в програмі не доступне")
         elif button == '1':
-            score = question.questions()
-            if score is not None: #захист від недостатньої кількості питань після return повертає None
-                stats.update(score)
+            result = question.questions()
+            if result is not None: #захист від недостатньої кількості питань після return повертає None
+                score, category = result
+                stats.update(score, category)
         elif button == '2':
             question.add_questions()
             question.save()
