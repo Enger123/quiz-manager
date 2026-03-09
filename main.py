@@ -124,8 +124,10 @@ class QuestionManager:
 
         grade = true_counter * 100 / all_questions
         rounded_grade = round(grade)
-        print(f"Кількість правильних: {true_counter}")
-        print(f"Кількість неправильних: {false_counter}")
+        print("\nРезультат тесту")
+        print(f"Правильних відповідей: {true_counter}")
+        print(f"Неправильних: {false_counter}")
+        print(f"Ваш бал: {rounded_grade}%")
         return rounded_grade, user_category
 
 
