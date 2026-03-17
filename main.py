@@ -1,15 +1,15 @@
+from pathlib import Path
 import random
-import os
 import json
 import time
 
 class StatsManager:
-    FILE = "stats.json"
+    FILE = Path("stats.json")
     def __init__(self):
         self.data = self.load()
 
     def load(self):
-        if os.path.isfile(self.FILE):
+        if self.FILE.is_file():
             try:
                 with open(self.FILE, "r") as file:
                     return json.load(file)
@@ -49,10 +49,10 @@ class QuestionManager:
     def __init__(self):
         self.answers = self.load_file()
 
-    FILE = "questions.json"
+    FILE = Path("questions.json")
 
     def load_file(self):
-        if os.path.isfile(self.FILE):
+        if self.FILE.is_file:
             try:
                 with open(self.FILE, "r") as file:
                     return json.load(file)
