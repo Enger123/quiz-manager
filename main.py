@@ -52,7 +52,7 @@ class QuestionManager:
     FILE = Path("questions.json")
 
     def load_file(self):
-        if self.FILE.is_file:
+        if self.FILE.is_file():
             try:
                 with open(self.FILE, "r") as file:
                     return json.load(file)
